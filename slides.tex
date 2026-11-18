@@ -1,7 +1,8 @@
 \documentclass[aspectratio=169,11pt]{beamer}
-\usepackage{palermo-slides}
+\IfFileExists{template/palermo-slides.sty}
+  {\usepackage{template/palermo-slides}}
+  {\usepackage{palermo-slides}}
 \addbibresource{references.bib}
-\graphicspath{{figures/}}
 
 \title{Entanglement percolation in\\random quantum networks}
 \author{Alessandro Romancino}
@@ -105,7 +106,7 @@
       \textcolor{tgray}{\fbox{%
         \parbox[c][34mm][c]{0.88\linewidth}{\centering
           Optical setup or device image\\
-          \small\texttt{figures/device.pdf}}}}
+          \small\texttt{device.pdf}}}}
     \column{0.43\textwidth}
       \begin{block}{A physical source of link disorder}
         Unequal attenuation changes the balance of the two polarization components.
