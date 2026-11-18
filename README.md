@@ -67,6 +67,7 @@ latexmk -pdf -synctex=1 -interaction=nonstopmode -halt-on-error slides.tex hando
 ```
 
 The `.latexmkrc` puts both PDFs and their auxiliary files in `.pdf/`.
+Each successful PDF build also refreshes the corresponding preview in `docs/`.
 Latexmk runs Biber and the extra LaTeX passes for references and contents.
 The example was built with TinyTeX (TeX Live 2026), latexmk 4.88, and Biber 2.22.
 
