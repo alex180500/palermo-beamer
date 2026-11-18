@@ -58,15 +58,18 @@ directory with the style file.
 
 ## Build the example
 
-The example loads the theme bundled with the repository. From the repository
-root, compile either file with `latexmk`, or give it both
-filenames to build the presentation and handout together:
+The example loads the bundled theme. From the repository root, run:
 
 ```sh
-latexmk -pdf -synctex=1 -interaction=nonstopmode -halt-on-error slides.tex handout.tex
+latexmk
 ```
 
-The `.latexmkrc` puts both PDFs and their auxiliary files in `.pdf/`.
+The default targets are `slides.tex` and `handout.tex`. Open the repository
+as a folder in VS Code to use its LaTeX Workshop recipe, **Palermo slides and
+handout**, for regular builds and autobuilds. Specify a single source on the
+command line, such as `latexmk slides.tex`, to build just that PDF.
+
+Both PDFs and their auxiliary files go into `.pdf/`.
 Each successful PDF build also refreshes the corresponding preview in `docs/`.
 Latexmk runs Biber and the extra LaTeX passes for references and contents.
 The example was built with TinyTeX (TeX Live 2026), latexmk 4.88, and Biber 2.22.

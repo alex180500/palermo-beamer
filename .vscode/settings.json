@@ -1,0 +1,22 @@
+{
+  "latex-workshop.latex.outDir": "%DIR%/.pdf",
+  "latex-workshop.latex.recipe.default": "Palermo slides and handout",
+  "latex-workshop.latex.recipes": [
+    {
+      "name": "Palermo slides and handout",
+      "tools": ["palermo-latexmk"]
+    }
+  ],
+  "latex-workshop.latex.tools": [
+    {
+      "name": "palermo-latexmk",
+      "command": "latexmk",
+      "args": [
+        "-synctex=1",
+        "-interaction=nonstopmode",
+        "-file-line-error",
+        "-halt-on-error"
+      ]
+    }
+  ]
+}
