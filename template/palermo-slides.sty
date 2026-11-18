@@ -1,0 +1,544 @@
+\NeedsTeXFormat{LaTeX2e}
+% Match the requested package path even when the theme folder is renamed.
+\ProvidesPackage{\@currpath palermo-slides}[2026/10/20 Reusable Palermo research slides]
+
+% Capture the package directory before loading dependencies changes \@currpath.
+% Keep the bundled artwork in assets/ so the whole theme folder is portable.
+\edef\palermo@themedir{\@currpath}
+
+% Load after \documentclass{beamer}. Deck metadata and content stay in the
+% main .tex file; colours, typography, helpers and cover layout live here.
+\@ifclassloaded{beamer}{}{%
+  \PackageError{palermo-slides}{This package requires the beamer class}%
+    {Use \string\documentclass[aspectratio=169,11pt]{beamer}.}}
+
+% Use the same Type 1 Fira Sans as the existing pdfLaTeX build. Load the
+% Metropolis layout components without its XeLaTeX/LuaLaTeX font loader.
+\RequirePackage[T1]{fontenc}
+\RequirePackage[utf8]{inputenc}
+\RequirePackage{xspace}
+% Scalable monospace fonts also keep small arXiv identifiers vector-based.
+\RequirePackage{lmodern}
+\RequirePackage[sfdefault,lining]{FiraSans}
+\useinnertheme{metropolis}
+\useoutertheme[progressbar=none,numbering=fraction]{metropolis}
+\usecolortheme[block=fill]{metropolis}
+\setbeamerfont{title}{size=\LARGE,series=\bfseries}
+\setbeamerfont{subtitle}{size=\large}
+\setbeamerfont{author}{size=\LARGE}
+\setbeamertemplate{author}{%
+  \vspace*{1em}%
+  \insertauthor\par
+  \vspace*{0.25em}}
+\setbeamerfont{institute}{shape=\itshape}
+\setbeamerfont{date}{size=\small}
+\setbeamerfont{section title}{size=\Large,series=\bfseries}
+\setbeamerfont{frametitle}{size=\large,series=\bfseries}
+\setbeamerfont{block title}{size=\normalsize,series=\bfseries}
+\setbeamerfont{block title alerted}{size=\normalsize,series=\bfseries}
+\setbeamerfont{caption}{size=\small}
+\setbeamerfont{caption name}{series=\bfseries}
+\setbeamerfont{description item}{series=\bfseries}
+\setbeamerfont{page number in head/foot}{size=\scriptsize}
+\setbeamerfont{standout}{size=\Large,series=\bfseries}
+
+\RequirePackage{amsmath,amssymb,bm,mathpazo}
+% Keep mathpazo's math alphabet instead of Beamer's sans-serif replacements.
+\usefonttheme{professionalfonts}
+\RequirePackage{graphicx}
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,positioning,decorations.pathmorphing}
+\RequirePackage{pgfplots}
+\pgfplotsset{compat=1.18}
+
+% Apply column defaults before explicit options, preserving local overrides
+% and Beamer's overlay syntax. Keep this within the native columns environment.
+\expandafter\patchcmd\csname beamerx@\string\columns\endcsname
+  {\setkeys{beamer@col}{#1}}
+  {\setkeys{beamer@col}{c,onlytextwidth,#1}}
+  {}{\PackageError{palermo-slides}{Cannot set the default columns options}%
+    {The Beamer columns interface may have changed.}}
+
+% Center body text by default, independently of vertical frame/column alignment.
+% Explicit \raggedright, \raggedleft or \centering in the content still wins.
+\AddToHook{env/beamer@framepauses/begin}{\centering}
+\newcommand{\palermo@centercolumn}[1]{%
+  \expandafter\patchcmd\csname beamerx@\string#1\endcsname
+    {\raggedright}{\centering}{}%
+    {\PackageError{palermo-slides}{Cannot center column contents}%
+      {The Beamer column interface may have changed.}}}
+\palermo@centercolumn{\beamer@columncom}
+\palermo@centercolumn{\beamer@columnenv}
+
+% Space between content paragraphs, including the minipages used by Beamer
+% columns. A blank line (or \par) now gives the same gap in both contexts.
+% Keep line leading unchanged: wrapped sentences should remain compact.
+\newlength{\slideparagraphskip}
+\setlength{\slideparagraphskip}{1mm}
+\setlength{\metropolis@parskip}{\slideparagraphskip}
+\setlength{\parskip}{\slideparagraphskip}
+\let\palermo@minipagerestore\@minipagerestore
+\def\@minipagerestore{%
+  \palermo@minipagerestore
+  \setlength{\parskip}{\slideparagraphskip}}
+
+% Colours shared with the thesis figures and the Oslo deck.
+\definecolor{tblue}{HTML}{0072B2}
+\definecolor{tlblue}{HTML}{91BADE}
+\definecolor{tpink}{HTML}{CC79A7}
+\definecolor{tlpink}{HTML}{EBBCD7}
+\definecolor{tmag}{HTML}{AA3377}
+\definecolor{tred}{HTML}{AA3939}
+\definecolor{tyellow}{HTML}{FFE099}
+\definecolor{tgreen}{HTML}{228833}
+\definecolor{tdark}{HTML}{23373B}
+\definecolor{tgray}{HTML}{6B6B6B}
+
+% Override theme defaults here so every presentation element uses the same
+% palette. White is the neutral canvas; all accents come from the colours above.
+\setbeamercolor{normal text}{fg=tdark,bg=white}
+\setbeamercolor{structure}{fg=tdark}
+\setbeamercolor{palette primary}{fg=white,bg=tdark}
+\setbeamercolor{alerted text}{fg=tmag}
+\setbeamercolor{example text}{fg=tgreen}
+\setbeamercolor{progress bar}{fg=tblue,bg=tlblue!35}
+\setbeamercolor{frametitle}{fg=white,bg=tdark}
+\setbeamercolor{background canvas}{bg=white}
+\setbeamercolor{block title}{fg=tdark,bg=tdark!20}
+\setbeamercolor{block body}{fg=tdark,bg=tdark!10}
+\setbeamercolor{footnote}{fg=tgray}
+\setbeamercolor{section in toc}{fg=tblue}
+\setbeamercolor{subsection in toc}{fg=tblue}
+\setbeamercolor{subsubsection in toc}{fg=tblue}
+\hypersetup{colorlinks=true,linkcolor=tblue,urlcolor=tblue,citecolor=tblue,filecolor=tblue}
+
+% Draw one consistent progress bar at the bottom edge of content pages,
+% section dividers and standout frames. Overlaying it keeps the
+% content and citation-footer space unchanged.
+\newlength{\slideprogressheight}
+\setlength{\slideprogressheight}{1.2pt}
+\newlength{\slidetitleseparatorheight}
+\setlength{\slidetitleseparatorheight}{2pt}
+\addtobeamertemplate{title separator}{%
+  \setlength{\metropolis@titleseparator@linewidth}{\slidetitleseparatorheight}}{}
+\setbeamertemplate{progress bar in section page}{}
+\newlength{\palermo@progresswidth}
+\newcommand{\palermo@bottomprogress}{%
+  \begingroup
+    \setlength{\palermo@progresswidth}{%
+      \paperwidth * \ratio{\insertframenumber pt}{\inserttotalframenumber pt}}%
+    % On a first build, Beamer's provisional total can be smaller than reality.
+    \ifdim\palermo@progresswidth>\paperwidth
+      \setlength{\palermo@progresswidth}{\paperwidth}%
+    \fi
+    \begin{tikzpicture}[remember picture,overlay]
+      \fill[tlblue!35] (current page.south west)
+        rectangle ([yshift=\slideprogressheight]current page.south east);
+      \fill[tblue] (current page.south west)
+        rectangle ([xshift=\palermo@progresswidth,yshift=\slideprogressheight]current page.south west);
+    \end{tikzpicture}%
+  \endgroup}
+\AddToHook{shipout/foreground}{\palermo@bottomprogress}
+
+% Metropolis puts a self-link in each section divider. Keep those headings
+% plain while preserving Beamer's destinations for the clickable contents.
+\addtobeamertemplate{section page}{\begin{NoHyper}}{\end{NoHyper}}
+
+% Record titled content frames underneath their section in the standard TOC.
+% Reuse Beamer's indented entry renderer without changing subsection counters.
+% Frames before the first section (cover/contents) and untitled dividers are
+% omitted. Short frame titles, when supplied, also serve as the TOC text.
+\setbeamerfont{section in toc}{size=\small,series=\bfseries}
+\setbeamerfont{subsection in toc}{size=\footnotesize}
+\newcount\palermo@lasttocframepage
+\newcommand{\palermo@writeframeintoc}{%
+  \ifnum\c@section>0\relax
+    \ifx\beamer@frametitle\@empty\else
+      \ifx\beamer@framestartpage\@empty\else
+        \ifnum\beamer@framestartpage>\palermo@lasttocframepage
+          \global\palermo@lasttocframepage=\beamer@framestartpage\relax
+          \addtocontents{toc}{%
+            \protect\beamer@subsectionintoc{\the\c@section}{0}%
+              {\expandafter\unexpanded\expandafter{\beamer@shortframetitle}}%
+              {\beamer@framestartpage}{\the\c@part}{\the\beamer@tocsectionnumber}}%
+        \fi
+      \fi
+    \fi
+  \fi}
+\pretocmd{\beamer@writeslidentry}{\palermo@writeframeintoc}{}{%
+  \PackageError{palermo-slides}{Cannot register slide titles in the contents}%
+    {The Beamer frame-writing interface may have changed.}}
+
+% Call between frames. [short] lists sections without the slide-title entries.
+\newcommand{\maketoc}[1][]{%
+  \begin{frame}{Contents}
+    \raggedright
+    \setlength{\parskip}{0pt}%
+    \ifstrequal{#1}{short}
+      {\tableofcontents[hideallsubsections]}
+      {\tableofcontents}%
+  \end{frame}}
+
+% New PGFPlots figures share the presentation palette too.
+\pgfplotscreateplotcyclelist{palermo cycle}{%
+  {tblue,mark=*},
+  {tmag,mark=square*},
+  {tgreen,mark=triangle*},
+  {tpink,mark=diamond*},
+  {tgray,mark=pentagon*}%
+}
+\pgfplotsset{cycle list name=palermo cycle}
+
+% Internal citation layout. The public interface is \cite, not a raw-text footer.
+% Typeset each call immediately, preserving its bibliography context, and
+% collect the resulting paragraphs into one footer for the current slide.
+\newsavebox{\palermo@citations}
+\newlength{\slidecitationsep}
+\setlength{\slidecitationsep}{2pt}
+\AddToHook{env/beamer@framepauses/begin}{%
+  \global\setbox\palermo@citations=\box\voidb@x}
+\newcommand{\palermo@citationfooter}[1]{%
+  \global\setbox\palermo@citations=\vbox{%
+    % Keep colour-stack pushes and their matching pops inside the saved box.
+    % A bare \vbox would place the final colour reset in the slide body.
+    \color@begingroup
+    \hsize=0.86\paperwidth
+    \linewidth=\hsize
+    \raggedright
+    \fontsize{5.6}{6.8}\selectfont
+    \color{tgray}%
+    \setlength{\parskip}{0pt}%
+    \setlength{\parindent}{0pt}%
+    \ifvoid\palermo@citations\else
+      \unvcopy\palermo@citations
+      % Unboxing does not restore TeX's previous-line depth. Restore it so
+      % a new citation paragraph gets the same baseline spacing as wrapping.
+      \prevdepth=\dp\palermo@citations
+      \vskip\slidecitationsep
+    \fi
+    \noindent#1\par
+    \color@endgroup}}
+\newcommand{\palermo@rendercitationfooter}{%
+  \begin{tikzpicture}[remember picture,overlay]
+    \node[anchor=south west,inner sep=0pt,text width=0.86\paperwidth,align=left,
+          font=\fontsize{5.6}{6.8}\selectfont,text=tgray] (refnode)
+      at ([xshift=4mm,yshift=2.6mm]current page.south west)
+      {\usebox{\palermo@citations}};
+    \draw[tgray!40,line width=0.3pt]
+      ([yshift=1.2mm]refnode.north west) -- ++(3.5cm,0);
+  \end{tikzpicture}}
+% Draw at shipout so the overlay does not create an invisible body paragraph.
+\AddToHook{shipout/foreground}{%
+  \ifvoid\palermo@citations\else
+    \palermo@rendercitationfooter
+  \fi}
+
+% The normal text area ends above the theme's page-number footline. For
+% cited frames, move that boundary to the citation separator instead, using
+% the measured footer height. Metropolis's equal flexible skips then center
+% the body between the title bar and the actual citation footer.
+\newcommand{\palermo@fitcitationarea}{%
+  \ifbeamer@plainframe\else
+    \ifbeamer@autobreak\else
+      \ifvoid\palermo@citations\else
+        \advance\beamer@framebottomskip by
+          \dimexpr\ht\palermo@citations+\dp\palermo@citations
+            +3.8mm-\footheight\relax
+      \fi
+    \fi
+  \fi}
+\pretocmd{\beamer@autobreakframebox}{\palermo@fitcitationarea}{}{%
+  \PackageError{palermo-slides}{Cannot reserve the citation footer area}%
+    {The Beamer frame layout interface may have changed.}}
+
+% Native math environments give LaTeX Workshop highlighting, previews and
+% labels. Size the math before amsmath enters display mode, within its group.
+% Display environments already use display style. Apply it to inline math
+% too ($...$, \(...\), and math), preserving any existing math-entry hooks.
+\AtBeginDocument{%
+  \everymath\expandafter{\the\everymath\displaystyle}}
+\newcommand{\palermo@displaymath}{%
+  \Large
+  \setlength{\abovedisplayskip}{0pt}%
+  \setlength{\belowdisplayskip}{0pt}%
+  \setlength{\abovedisplayshortskip}{0pt}%
+  \setlength{\belowdisplayshortskip}{0pt}}
+\AtBeginEnvironment{equation}{\palermo@displaymath}
+\AtBeginEnvironment{equation*}{\palermo@displaymath}
+% For compact formulas sharing a row or sitting in a column, the native
+% inline math environment retains the old bigeq spacing and editor support.
+\AtBeginEnvironment{math}{\Large}
+
+% ------------------------------------------------------------------
+% Bibliography-backed footer citations (APS/REVTeX-inspired formatting).
+% ------------------------------------------------------------------
+% Latexmk runs Biber automatically alongside pdfLaTeX.
+% biblatex accepts both Zotero BibTeX (journal, archiveprefix, year) and
+% BibLaTeX (journaltitle, eprinttype, date) field names with this backend.
+\RequirePackage[
+  backend=biber,
+  style=authortitle,
+  sorting=none,
+  giveninits=true,
+  uniquename=false,
+  uniquelist=false,
+  date=year,
+  maxcitenames=3,
+  mincitenames=1,
+  maxbibnames=3,
+  minbibnames=1,
+  doi=true,
+  url=false,
+  isbn=false,
+  eprint=true
+]{biblatex}
+
+\DeclareNameAlias{default}{given-family}
+\DeclareNameAlias{sortname}{given-family}
+\DeclareDelimFormat{finalnamedelim}{%
+  \ifnumgreater{\value{liststop}}{2}{\finalandcomma}{}%
+  \addspace\bibstring{and}\space}
+\DefineBibliographyStrings{english}{andothers={\mkbibemph{et\addabbrvspace al\adddot}}}
+\DeclareFieldFormat{slide:title}{\mkbibemph{#1}}
+\DeclareFieldFormat{slide:journal}{#1}
+\DeclareFieldFormat{slide:volume}{\mkbibbold{#1}}
+\DeclareFieldFormat{slide:pages}{\mkfirstpage{#1}}
+% Link publication details to the DOI, falling back to the record's URL.
+% Keep long URLs out of the compact citation footer.
+\DeclareFieldFormat{slide:doi}{%
+  \iffieldundef{doi}
+    {\iffieldundef{url}
+      {#1}
+      {\href{\thefield{url}}{#1}}}
+    {\href{https://doi.org/\thefield{doi}}{#1}}}
+\DeclareFieldFormat{eprint:arxiv}{%
+  \href{https://arxiv.org/abs/#1}{arXiv:\nolinkurl{#1}}}
+\DeclareFieldAlias{eprint:arXiv}{eprint:arxiv}
+
+% Match the name itself, so highlighting works in any author position.
+% Full given names and initial-only Zotero exports are both supported.
+\newcommand{\palermo@highlightfamily}{Romancino}
+\newcommand{\palermo@highlightgiven}{Alessandro}
+\newcommand{\palermo@highlightinitial}{A}
+\renewcommand{\mkbibcompletenamegivenfamily}[1]{%
+  \edef\palermo@dottedinitial{\palermo@highlightinitial.}%
+  \ifboolexpr{
+    test {\ifdefstrequal{\namepartfamily}{\palermo@highlightfamily}}
+    and (
+      test {\ifdefstrequal{\namepartgiven}{\palermo@highlightgiven}}
+      or test {\ifdefstrequal{\namepartgiven}{\palermo@highlightinitial}}
+      or test {\ifdefstrequal{\namepartgiven}{\palermo@dottedinitial}}
+    )
+  }{\mkbibbold{#1}}{#1}}
+
+% Full citations use journal names as in the article; compact citations
+% prefer Zotero abbreviations. APS references print the first page only.
+\newbibmacro*{slide:journal}{%
+  \iftoggle{palermo@compactcite}{%
+    \iffieldundef{shortjournal}
+      {\printfield[slide:journal]{journaltitle}}
+      {\printfield[slide:journal]{shortjournal}}%
+  }{\printfield[slide:journal]{journaltitle}}%
+  \setunit{\addspace}%
+  \printfield[slide:volume]{volume}%
+  \setunit{\addcomma\space}%
+  \iffieldundef{eid}
+    {\printfield[slide:pages]{pages}}
+    {\printfield{eid}}}
+
+\newbibmacro*{slide:publication}{%
+  \iffieldundef{journaltitle}{%
+    \printfield{type}%
+    \setunit{\addcomma\space}%
+    \printlist{institution}%
+    \setunit{\addcomma\space}%
+    \printlist{publisher}%
+    \setunit{\addcomma\space}%
+    \printfield{note}%
+  }{\usebibmacro{slide:journal}}%
+  \setunit{\addspace}%
+  \printtext[parens]{\printdate}}
+
+% Same visual hierarchy as the original manual references: initials and
+% family names, italic title, journal, bold volume, pages, year and arXiv.
+% Optional fields are omitted cleanly, so incomplete working records work.
+\DeclareBibliographyDriver{slide}{%
+  \printnames{author}%
+  \setunit{\addcomma\space}%
+  \iftoggle{palermo@compactcite}{}{\printfield[slide:title]{title}}%
+  \setunit{\addcomma\space}%
+  \printtext[slide:doi]{\usebibmacro{slide:publication}}%
+  \setunit{\addcomma\space}%
+  \usebibmacro{eprint}%
+  \usebibmacro{finentry}}
+
+% A comma-separated key list runs consecutively within one footer paragraph.
+% Separate calls start new paragraphs. Standard pre/postnotes are supported.
+% Keeping the standard command name enables citation completion/highlighting.
+\DeclareCiteCommand{\cite}[\palermo@citationfooter]
+  {\togglefalse{palermo@compactcite}\usebibmacro{prenote}}
+  {\usedriver{\DeclareNameAlias{sortname}{default}%
+              \renewbibmacro*{finentry}{}}{slide}}
+  {\addperiod\space\setunit{}}
+  {\usebibmacro{postnote}\addperiod}
+
+% The familiar starred syntax gives the abbreviated form used on dense
+% reference slides: authors, publication, year and arXiv, without titles.
+\newtoggle{palermo@compactcite}
+\DeclareCiteCommand*{\cite}[\palermo@citationfooter]
+  {\toggletrue{palermo@compactcite}\usebibmacro{prenote}}
+  {\usedriver{\DeclareNameAlias{sortname}{default}%
+              \renewbibmacro*{finentry}{}}{slide}}
+  {\addperiod\space\setunit{}}
+  {\usebibmacro{postnote}\addperiod}
+
+% Text separator, safe in slide metadata and headings.
+\DeclareRobustCommand{\mydot}{\textperiodcentered\xspace}
+
+% Bottom-of-slide disclosure, with an optional bold heading. Capture the
+% current text colour so it also works on dark standout frames.
+\newsavebox{\palermo@llmnotice}
+\AddToHook{env/beamer@framepauses/begin}{%
+  \global\setbox\palermo@llmnotice=\box\voidb@x}
+\newcommand{\llm}[2][Use of AI/LLM Tools.]{%
+  \global\setbox\palermo@llmnotice=\vbox{%
+    \color@setgroup
+    \hsize=\dimexpr\paperwidth-14mm\relax
+    \linewidth=\hsize
+    \normalfont\footnotesize
+    \raggedright
+    \setlength{\parskip}{0pt}%
+    \setlength{\parindent}{0pt}%
+    \textbf{#1}\space#2\par
+    \color@endgroup}}
+\AddToHook{shipout/foreground}{%
+  \ifvoid\palermo@llmnotice\else
+    \begin{tikzpicture}[remember picture,overlay]
+      \node[anchor=south west,inner sep=0pt]
+        at ([xshift=7mm,yshift=6mm]current page.south west)
+        {\usebox{\palermo@llmnotice}};
+    \end{tikzpicture}%
+  \fi}
+
+% A deliberate larger separation between content blocks.
+\newcommand{\smallgap}{\vspace{1mm}}
+\newcommand{\gap}{\vspace{3mm}}
+\newcommand{\biggap}{\vspace{6mm}}
+
+% Rounded labels, with an optional fill colour.
+\newcommand{\chip}[2][tlblue!45]{%
+  \tikz[baseline=(c.base)]\node[fill=#1,rounded corners=5pt,inner xsep=5pt,
+        inner ysep=2.5pt,font=\small](c){\strut #2};}
+\newcommand{\schip}[2][tlblue!45]{%
+  \tikz[baseline=(c.base)]\node[fill=#1,rounded corners=4pt,inner xsep=4pt,
+        inner ysep=2pt,font=\footnotesize](c){\strut #2};}
+\newcommand{\tchip}[2][tlblue!45]{%
+  \tikz[baseline=(c.base)]\node[fill=#1,rounded corners=4pt,inner xsep=3.5pt,
+        inner ysep=1.8pt,font=\scriptsize](c){\strut #2};}
+
+\newcommand{\pub}[3]{%
+  \noindent\textcolor{#1}{\rule[0.3ex]{1.4mm}{1.4mm}}\hspace{1.8mm}%
+  \parbox[t]{\dimexpr\linewidth-3.2mm\relax}{%
+    \raggedright\footnotesize\textbf{#2}\\[2.5pt]%
+    {\scriptsize\color{tgray}#3}}\par}
+% Use compact leading for automatic caption wraps, independently of the
+% surrounding body text. Finish the paragraph before restoring its spacing.
+\newcommand{\capt}[1]{{%
+  \small\color{tgray}%
+  #1\par}}
+
+% Named styles keep diagram formatting out of the slide content. The short
+% node styles are scoped to each tikzpicture that selects a diagram style.
+\tikzset{
+  collaboration diagram/.style={
+    inst/.style={circle,fill=tblue,minimum size=5mm,inner sep=0pt},
+    home/.style={circle,fill=tmag,minimum size=7mm,inner sep=0pt},
+    lab/.style={font=\scriptsize,align=center},
+    tag/.style={font=\tiny\itshape,text=tgray,sloped}
+  },
+  control diagram/.style={
+    node distance=8mm and 9mm,
+    box/.style={rounded corners=4pt,align=center,inner xsep=5pt,inner ysep=3pt,
+                minimum height=1.0cm,minimum width=2.3cm,font=\small},
+    arr/.style={-{Stealth[length=2.4mm,width=2mm]},line width=1pt,tdark!75},
+    lbl/.style={font=\scriptsize\itshape,text=tgray}
+  },
+  identification diagram/.style={
+    control diagram,
+    node distance=8mm and 7mm,
+    box/.style={rounded corners=4pt,align=center,inner xsep=5pt,inner ysep=3pt,
+                minimum height=0.95cm,minimum width=2.3cm,font=\small}
+  },
+  reservoir diagram/.style={
+    control diagram,
+    box/.style={rounded corners=4pt,align=center,inner xsep=5pt,inner ysep=3pt,
+                minimum height=1.0cm,font=\small}
+  }
+}
+
+% Cover defaults come from this theme folder. Decks can override individual
+% keys with \slidesetup; empty values omit the corresponding asset.
+\pgfkeys{
+  /palermo slides/.is family,
+  /palermo slides,
+  title background/.store in=\palermo@titlebackground,
+  university logo/.store in=\palermo@universitylogo,
+  group logo/.store in=\palermo@grouplogo,
+  highlight author family/.store in=\palermo@highlightfamily,
+  highlight author given/.store in=\palermo@highlightgiven,
+  highlight author initial/.store in=\palermo@highlightinitial
+}
+\newcommand{\slidesetup}[1]{\pgfkeys{/palermo slides/.cd,#1}}
+\slidesetup{
+  title background=\palermo@themedir assets/background-networks.pdf,
+  university logo=\palermo@themedir assets/unipa.pdf,
+  group logo=\palermo@themedir assets/qunipa.pdf
+}
+
+% Fill the slide without stretching the background. A portrait image is
+% cropped symmetrically to the slide's aspect ratio, at its original opacity.
+\newsavebox{\palermo@backgroundbox}
+\newcommand{\palermo@coverbackground}{%
+  \begin{tikzpicture}[remember picture,overlay]
+    \clip (current page.south west) rectangle (current page.north east);
+    \sbox{\palermo@backgroundbox}{%
+      \includegraphics[height=\paperheight]{\palermo@titlebackground}}%
+    \node[inner sep=0pt,anchor=center] at (current page.center) {%
+      \ifdim\wd\palermo@backgroundbox<\paperwidth
+        \includegraphics[width=\paperwidth]{\palermo@titlebackground}%
+      \else
+        \usebox{\palermo@backgroundbox}%
+      \fi};
+  \end{tikzpicture}}
+
+\newcommand{\palermo@coverlogos}{%
+  \begin{tikzpicture}[remember picture,overlay]
+    \node[anchor=south east,inner sep=0pt]
+      at ([xshift=-7mm,yshift=7mm]current page.south east) {%
+        \ifx\palermo@universitylogo\@empty\else
+          \includegraphics[height=1.15cm]{\palermo@universitylogo}%
+        \fi
+        \ifx\palermo@grouplogo\@empty\else
+          \ifx\palermo@universitylogo\@empty\else\hspace{5mm}\fi
+          \raisebox{1.5mm}{\includegraphics[height=0.8cm]{\palermo@grouplogo}}%
+        \fi};
+  \end{tikzpicture}}
+
+% Call between frames. Background and logo changes are local to this frame.
+\newcommand{\maketitleslide}{%
+  \begingroup
+    \let\palermo@bottomprogress\relax
+    % The cover has its own template spacing, independent of content blocks.
+    \setlength{\slideparagraphskip}{0pt}%
+    \setlength{\parskip}{0pt}%
+    \ifx\palermo@titlebackground\@empty\else
+      \usebackgroundtemplate{\palermo@coverbackground}%
+    \fi
+    \begin{frame}[plain]
+      \raggedright
+      \titlepage
+      \palermo@coverlogos
+    \end{frame}
+  \endgroup}
+
+\endinput
