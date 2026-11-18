@@ -73,19 +73,15 @@ The example was built with TinyTeX (TeX Live 2026), latexmk 4.88, and Biber 2.22
 
 ## Start a new talk
 
-After installing the theme, run:
-
-```sh
-palermo_repo="$HOME/Palermo/palermo-beamer"
-"$palermo_repo/new-deck" "$PWD/my-talk"
-cd my-talk
-latexmk -pdf -synctex=1 -interaction=nonstopmode -halt-on-error slides.tex handout.tex
-```
+After installing the theme, copy [slides.tex](slides.tex),
+[handout.tex](handout.tex), and [references.bib](references.bib) into your
+new project. Copy `.latexmkrc` and `.gitignore` to build into `.pdf/` and
+exclude that directory from Git.
 
 Edit `slides.tex` for the talk and `references.bib` for citations. Add artwork
-alongside the deck or use project-relative paths. The starter uses the
-installed theme. To reproduce a particular version, install it from that Git
-commit or keep a copy of the theme with the deck.
+alongside the deck or use paths relative to the project. To reproduce a
+particular theme version, install it from its Git commit or keep a copy of
+the theme with the deck.
 
 ## Slide patterns
 
