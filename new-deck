@@ -9,7 +9,5 @@ fi
 repo_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 
 mkdir -- "$1"
-cp -R -- "$repo_dir/Makefile" "$repo_dir/.gitignore" \
-    "$repo_dir/slides.tex" "$repo_dir/handout.tex" \
-    "$repo_dir/references.bib" "$repo_dir/data.tex" \
-    "$repo_dir/figures" "$repo_dir/template" "$1/"
+cp -R -- "$repo_dir/.gitignore" "$repo_dir/slides.tex" "$repo_dir/handout.tex" \
+    "$repo_dir/references.bib" "$repo_dir/figures" "$1/"

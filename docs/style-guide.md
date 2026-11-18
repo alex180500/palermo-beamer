@@ -13,9 +13,9 @@ Repeated calls update only the keys supplied.
 
 | Key | Default | Purpose |
 | --- | --- | --- |
-| `title background` | Theme's `assets/background-networks.pdf` | Cover background |
-| `university logo` | Theme's `assets/unipa.pdf` | First cover logo |
-| `group logo` | Theme's `assets/qunipa.pdf` | Second cover logo |
+| `title background` | Theme's `assets/palermo-slides-background-networks.pdf` | Cover background |
+| `university logo` | Theme's `assets/palermo-slides-unipa.pdf` | First cover logo |
+| `group logo` | Theme's `assets/palermo-slides-qunipa.pdf` | Second cover logo |
 | `highlight author family` | `Romancino` | Family name to bold in citations |
 | `highlight author given` | `Alessandro` | Full given name to match |
 | `highlight author initial` | `A` | Initial to match, also accepting `A.` |
@@ -631,7 +631,7 @@ overfull boxes. A build that exits successfully may still have layout problems.
 
 | Symptom | Check or correction |
 | --- | --- |
-| `palermo-slides.sty` not found | Use the actual folder path, e.g. `\usepackage{template/palermo-slides}`, and compile from the project directory |
+| `palermo-slides.sty` not found | Run `kpsewhich palermo-slides.sty` to check the installation, or use `\usepackage{template/palermo-slides}` with a project-local copy |
 | Cover artwork missing | Copy the full theme folder, including `assets/`; check optional custom paths and intentionally empty setup keys |
 | Requested/provided package-name warning | Use the current style file, whose declaration includes its loading path dynamically |
 | Undefined `\Tr`, `\ntr`, `\nout`, `\kett` or `\bbra` | Define the required scientific notation in the deck |

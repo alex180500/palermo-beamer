@@ -1,10 +1,13 @@
 \NeedsTeXFormat{LaTeX2e}
 % Match the requested package path even when the theme folder is renamed.
-\ProvidesPackage{\@currpath palermo-slides}[2026/10/20 Reusable Palermo research slides]
+\ProvidesPackage{\@currpath palermo-slides}[2026/11/18 Reusable Palermo research slides]
 
-% Capture the package directory before loading dependencies changes \@currpath.
-% Keep the bundled artwork in assets/ so the whole theme folder is portable.
-\edef\palermo@themedir{\@currpath}
+% An explicit package path uses the neighboring assets directory. With a bare
+% package name, TeX finds the uniquely named artwork in its normal search path.
+\edef\palermo@assetdir{\@currpath}
+\ifx\palermo@assetdir\@empty\else
+  \edef\palermo@assetdir{\palermo@assetdir assets/}
+\fi
 
 % Load after \documentclass{beamer}. Deck metadata and content stay in the
 % main .tex file; colours, typography, helpers and cover layout live here.
@@ -490,9 +493,9 @@
 }
 \newcommand{\slidesetup}[1]{\pgfkeys{/palermo slides/.cd,#1}}
 \slidesetup{
-  title background=\palermo@themedir assets/background-networks.pdf,
-  university logo=\palermo@themedir assets/unipa.pdf,
-  group logo=\palermo@themedir assets/qunipa.pdf
+  title background=\palermo@assetdir palermo-slides-background-networks.pdf,
+  university logo=\palermo@assetdir palermo-slides-unipa.pdf,
+  group logo=\palermo@assetdir palermo-slides-qunipa.pdf
 }
 
 % Fill the slide without stretching the background. A portrait image is

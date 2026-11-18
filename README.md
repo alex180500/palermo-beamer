@@ -10,64 +10,35 @@ citation footer.
 [Example handout](docs/example-handout.pdf) ·
 [Theme reference and style guide](docs/style-guide.md)
 
-## Build the example
-
-Use pdfLaTeX, latexmk, Biber, and Make. A full TeX Live or MacTeX installation
-includes the TeX dependencies. With a minimal installation, you will also need
-Beamer, Metropolis, Fira Sans, Latin Modern, Palatino math, TikZ/PGF, PGFPlots
-1.18 or later, and BibLaTeX with a compatible Biber version.
+## Install once with TinyTeX or TeX Live
 
 From the repository root, run:
 
 ```sh
-make          # both PDFs
-make slides   # build/slides.pdf
-make handout  # build/handout.pdf
+./install-texmf
+kpsewhich palermo-slides.sty
 ```
 
-You can also run the builds directly:
+The installer copies the package and cover artwork into the active TeX
+distribution's personal tree, `TEXMFHOME/tex/latex/palermo-slides`. It uses
+the `kpsewhich` on your `PATH` to locate the tree. Rerun it from a newer
+checkout to update the installed package.
+
+TinyTeX uses `tlmgr` for the dependencies. On a minimal setup, install these
+if they are missing:
 
 ```sh
-latexmk -pdf -synctex=1 -interaction=nonstopmode -halt-on-error -outdir=build slides.tex
-latexmk -pdf -synctex=1 -interaction=nonstopmode -halt-on-error -outdir=build handout.tex
+tlmgr install latexmk biber beamer beamertheme-metropolis biblatex \
+  fira lm psnfss palatino mathpazo fpl pgf pgfplots
 ```
 
-Latexmk runs Biber and the subsequent LaTeX passes for references, contents, and
-frame counts. Git ignores `build/`. The example was built with TeX Live
-2026, latexmk 4.88, and Biber 2.22.
-
-## Start a new talk
-
-```sh
-palermo_repo="$HOME/Palermo/palermo-beamer"
-"$palermo_repo/new-deck" "$PWD/my-talk"
-cd my-talk
-make
-```
-
-Edit `slides.tex` for the talk, `references.bib` for citations, and `data.tex`
-for shared plot data. Add artwork to `figures/`. The command copies those
-starter files, the Makefile, and the full theme into a new directory. Keep the
-copied `template/` under version control with the talk so it builds from the
-same assets and style on another machine. To reproduce a particular theme
-revision, check out that commit or tag in the theme repository before running
-`new-deck`. Once hosted, a clone of the repository works the same way.
-
-## Add the theme to an existing deck
-
-From the root of the deck, copy the package and its artwork together. The
-example below uses `palermo-theme/` as the local folder name.
-
-```sh
-palermo_repo="$HOME/Palermo/palermo-beamer"
-test ! -e palermo-theme && cp -R "$palermo_repo/template" palermo-theme
-```
+## Use the package in a talk
 
 Load the package after the Beamer class:
 
 ```tex
 \documentclass[aspectratio=169,11pt]{beamer}
-\usepackage{palermo-theme/palermo-slides}
+\usepackage{palermo-slides}
 % \addbibresource{references.bib}
 ```
 
@@ -76,8 +47,40 @@ If the deck already loads a theme or BibLaTeX, integrate those settings with
 this package call. Set the standard Beamer title metadata and use
 `\maketitleslide` for the cover. To change or omit an asset, use
 `\slidesetup{group logo={}, university logo=figures/my-logo.pdf}`.
-Paths for custom artwork are relative to the project root. The package finds
-its bundled artwork alongside the style file.
+Paths for custom artwork are relative to the deck.
+
+To share a self-contained deck, copy `template/` beside its main `.tex` file
+and use `\usepackage{template/palermo-slides}`. Keep the full `assets/`
+directory with the style file.
+
+## Build the example
+
+From the repository root, compile either file with `latexmk`, or give it both
+filenames to build the presentation and handout together:
+
+```sh
+latexmk -pdf -synctex=1 -interaction=nonstopmode -halt-on-error -outdir=build slides.tex handout.tex
+```
+
+The files are `build/slides.pdf` and `build/handout.pdf`. Latexmk runs Biber and
+the extra LaTeX passes for references and contents. The example was built with
+TinyTeX (TeX Live 2026), latexmk 4.88, and Biber 2.22.
+
+## Start a new talk
+
+After installing the theme, run:
+
+```sh
+palermo_repo="$HOME/Palermo/palermo-beamer"
+"$palermo_repo/new-deck" "$PWD/my-talk"
+cd my-talk
+latexmk -pdf -synctex=1 -interaction=nonstopmode -halt-on-error -outdir=build slides.tex handout.tex
+```
+
+Edit `slides.tex` for the talk and `references.bib` for citations. Add artwork
+to `figures/`. The starter uses the installed theme, so future talks only need
+the small set of source files. To reproduce a particular package revision,
+install from that Git commit or keep the theme with the deck as shown above.
 
 ## Slide patterns
 
@@ -91,8 +94,8 @@ its bundled artwork alongside the style file.
 | Closing | Use a `standout` frame for questions or a short closing message. |
 
 The example uses two papers by Alessandro Romancino. Its plot shows illustrative
-distributions, with the values kept in [data.tex](data.tex). The bibliography
-records and citation keys are in [references.bib](references.bib).
+distributions, with the coordinates next to the plot in [slides.tex](slides.tex).
+The bibliography records and citation keys are in [references.bib](references.bib).
 
 - [Entanglement percolation in random quantum networks](https://doi.org/10.1088/2058-9565/ae5fca)
 - [Random entanglement percolation on realistic quantum networks](https://doi.org/10.1393/ncc/i2026-26176-2)

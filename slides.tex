@@ -1,8 +1,7 @@
 \documentclass[aspectratio=169,11pt]{beamer}
-\usepackage{template/palermo-slides}
+\usepackage{palermo-slides}
 \addbibresource{references.bib}
 \graphicspath{{figures/}}
-\input{data.tex}
 
 \title{Entanglement percolation in\\random quantum networks}
 \author{Alessandro Romancino}
@@ -47,7 +46,7 @@
 \begin{frame}{The mean sets the classical threshold}
   \begin{columns}
     \column{0.51\textwidth}
-      % PGFPlots starting point. The toy data live in data.tex.
+      % PGFPlots starting point. Both illustrative distributions have mean 0.5.
       \begin{tikzpicture}
         \begin{axis}[
           width=\linewidth, height=4.6cm,
@@ -57,8 +56,12 @@
           xlabel={$x$}, ylabel={$F_X(x)$},
           tick label style={font=\scriptsize},
           legend style={font=\scriptsize,draw=none,at={(.97,.06)},anchor=south east}]
-          \addplot+[thick,no marks] table[x=x,y=narrow]{\linkcdfdata};
-          \addplot+[thick,no marks] table[x=x,y=wide]{\linkcdfdata};
+          \addplot+[thick,no marks] coordinates {
+            (0,0) (0.2,0) (0.4,0) (0.6,1) (0.8,1) (1,1)
+          };
+          \addplot+[thick,no marks] coordinates {
+            (0,0) (0.2,0) (0.4,0.333333) (0.6,0.666667) (0.8,1) (1,1)
+          };
           \legend{narrow,wider}
         \end{axis}
       \end{tikzpicture}
